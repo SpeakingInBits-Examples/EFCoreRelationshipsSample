@@ -46,7 +46,8 @@ public class CourseDashboardController : Controller
 public class CourseDashboardViewModel
 {
     /// <summary>
-    /// List of courses and their associated students
+    /// List of courses and their associated students. This property should
+    /// only contain courses that have at least 1 student. NO EMPTY COURSES
     /// </summary>
     public ICollection<Course> Courses { get; set; } = [];
 

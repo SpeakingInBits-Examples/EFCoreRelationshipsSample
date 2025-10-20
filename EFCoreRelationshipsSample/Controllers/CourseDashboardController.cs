@@ -1,63 +1,27 @@
-﻿using EFCoreRelationshipsSample.Data;
-using EFCoreRelationshipsSample.Models;
+﻿using EFCoreRelationshipsSample.Models;
+using EFCoreRelationshipsSample.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EFCoreRelationshipsSample.Controllers;
 
 public class CourseDashboardController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICourseService _courseService;
 
-    public CourseDashboardController(ApplicationDbContext context)
+    public CourseDashboardController(ICourseService courseService)
     {
-        _context = context;
+        _courseService = courseService;
     }
 
     public async Task<IActionResult> CourseRosters()
     {
-        // Get a list of courses that have enrolled students
-        List<Course> courses = await _context.Courses
-            .Include(course => course.Students)
-            .Where(course => course.Students.Any())
-            .ToListAsync();
-
-        // Students not enrolled in any course
-        List<Student> unenrolledStudents = await _context.Students
-            .Where(student => !student.Courses.Any())
-            .ToListAsync();
-
-        // Courses with no students enrolled
-        List<Course> emptyCourses = await _context.Courses
-            .Where(course => !course.Students.Any())
-            .ToListAsync();
-
-        CourseDashboardViewModel viewModel = new()
+        var viewModel = new CourseDashboardViewModel
         {
-            Courses = courses,
-            UnenrolledStudents = unenrolledStudents,
-            EmptyCourses = emptyCourses
+            Courses = await _courseService.GetCoursesWithStudentsAsync(),
+            UnenrolledStudents = await _courseService.GetUnenrolledStudentsAsync(),
+            EmptyCourses = await _courseService.GetEmptyCoursesAsync()
         };
 
         return View(viewModel);
     }
-}
-
-public class CourseDashboardViewModel
-{
-    /// <summary>
-    /// List of courses and their associated students. This property should
-    /// only contain courses that have at least 1 student. NO EMPTY COURSES
-    /// </summary>
-    public ICollection<Course> Courses { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the list of students who are not currently enrolled in any course.
-    /// </summary>
-    public ICollection<Student> UnenrolledStudents { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the collection of courses that currently have no enrolled students.
-    /// </summary>
-    public ICollection<Course> EmptyCourses { get; set; } = [];
 }

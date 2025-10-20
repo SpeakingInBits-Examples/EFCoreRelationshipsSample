@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace EFCoreRelationshipsSample.Models;
 
+[DebuggerDisplay($"Course: {{{nameof(CourseTitle)}}}, Credits: {{{nameof(Credits)}}}")]
 public class Course
 {
     [Key]
@@ -14,6 +16,7 @@ public class Course
     public ICollection<Student> Students { get; set; } = [];
 }
 
+[DebuggerDisplay($"Student: {{{nameof(FullName)}}}")]
 public class Student
 {
     [Key]

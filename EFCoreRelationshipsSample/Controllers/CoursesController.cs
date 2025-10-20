@@ -34,13 +34,84 @@ namespace EFCoreRelationshipsSample.Controllers
             }
 
             var course = await _context.Courses
+                .Include(c => c.Students)
                 .FirstOrDefaultAsync(m => m.Id == id);
+            
             if (course == null)
             {
                 return NotFound();
             }
 
-            return View(course);
+            // Get all students not enrolled in this course
+            var enrolledStudentIds = course.Students.Select(s => s.Id).ToList();
+            var availableStudents = await _context.Students
+                .Where(s => !enrolledStudentIds.Contains(s.Id))
+                .ToListAsync();
+
+            var viewModel = new CourseDetailsViewModel
+            {
+                Id = course.Id,
+                CourseTitle = course.CourseTitle,
+                Credits = course.Credits,
+                EnrolledStudents = course.Students.ToList(),
+                AvailableStudents = availableStudents
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Courses/AddStudent
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddStudent(int courseId, int studentId)
+        {
+            var course = await _context.Courses
+                .Include(c => c.Students)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var student = await _context.Students.FindAsync(studentId);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            // Check if student is already enrolled
+            if (!course.Students.Any(s => s.Id == studentId))
+            {
+                course.Students.Add(student);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = courseId });
+        }
+
+        // POST: Courses/WithdrawStudent
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> WithdrawStudent(int courseId, int studentId)
+        {
+            var course = await _context.Courses
+                .Include(c => c.Students)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if (course == null)
+            {
+                return NotFound();
+            }
+
+            var student = course.Students.FirstOrDefault(s => s.Id == studentId);
+            if (student != null)
+            {
+                course.Students.Remove(student);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = courseId });
         }
 
         // GET: Courses/Create

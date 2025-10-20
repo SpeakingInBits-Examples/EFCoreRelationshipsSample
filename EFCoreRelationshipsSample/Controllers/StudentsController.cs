@@ -73,12 +73,28 @@ namespace EFCoreRelationshipsSample.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students.FindAsync(id);
+            // Get selected student and their current course list
+            var student = await _context.Students
+                .Include(s => s.Courses)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            
             if (student == null)
             {
                 return NotFound();
             }
-            return View(student);
+
+            List<Course> allCourses = await _context.Courses.ToListAsync();
+
+            StudentEditViewModel viewModel = new()
+            {
+                Id = student.Id,
+                FullName = student.FullName,
+                SelectedCourseIds = student.Courses.Select(c => c.Id).ToList(),
+                AvailableCourses = allCourses,
+                EnrolledCourses = student.Courses.ToList()
+            };
+
+            return View(viewModel);
         }
 
         // POST: Students/Edit/5
@@ -86,9 +102,9 @@ namespace EFCoreRelationshipsSample.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName")] Student student)
+        public async Task<IActionResult> Edit(int id, StudentEditViewModel viewModel)
         {
-            if (id != student.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
@@ -97,12 +113,39 @@ namespace EFCoreRelationshipsSample.Controllers
             {
                 try
                 {
-                    _context.Update(student);
+                    var student = await _context.Students
+                        .Include(s => s.Courses)
+                        .FirstOrDefaultAsync(s => s.Id == id);
+
+                    if (student == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update student properties
+                    student.FullName = viewModel.FullName;
+
+                    // Clear existing courses
+                    student.Courses.Clear();
+
+                    // Add selected courses
+                    if (viewModel.SelectedCourseIds != null && viewModel.SelectedCourseIds.Any())
+                    {
+                        var selectedCourses = await _context.Courses
+                            .Where(c => viewModel.SelectedCourseIds.Contains(c.Id))
+                            .ToListAsync();
+
+                        foreach (var course in selectedCourses)
+                        {
+                            student.Courses.Add(course);
+                        }
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!StudentExists(student.Id))
+                    if (!StudentExists(viewModel.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +156,14 @@ namespace EFCoreRelationshipsSample.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+
+            // If we got this far, ModelState was invalid, reload the view
+            viewModel.AvailableCourses = await _context.Courses.ToListAsync();
+            viewModel.EnrolledCourses = await _context.Courses
+                .Where(c => viewModel.SelectedCourseIds.Contains(c.Id))
+                .ToListAsync();
+            
+            return View(viewModel);
         }
 
         // GET: Students/Delete/5

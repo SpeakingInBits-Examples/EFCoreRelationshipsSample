@@ -11,4 +11,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Student> Students { get; set; }
 
     public DbSet<Course> Courses { get; set; }
+
+    // One-to-many: a blog has many posts.
+    public DbSet<Blog> Blogs { get; set; }
+
+    public DbSet<Post> Posts { get; set; }
 }

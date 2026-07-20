@@ -17,6 +17,26 @@
     </li>
 </ul>
 
+<h3>One-to-one Relationship</h3>
+<ul>
+    <li>
+        <a asp-controller="People" asp-action="Index">People</a> &ndash; each person has at most one passport
+    </li>
+    <li>
+        <a asp-controller="Passports" asp-action="Index">Passports</a> &ndash; each passport belongs to one person
+    </li>
+</ul>
+
+<h3>One-to-many Relationship</h3>
+<ul>
+    <li>
+        <a asp-controller="Blogs" asp-action="Index">Blogs</a> &ndash; a blog has many posts
+    </li>
+    <li>
+        <a asp-controller="Posts" asp-action="Index">Posts</a> &ndash; each post belongs to one blog
+    </li>
+</ul>
+
 <h3>Many-to-many Relationship</h3>
 <ul>
     <li>

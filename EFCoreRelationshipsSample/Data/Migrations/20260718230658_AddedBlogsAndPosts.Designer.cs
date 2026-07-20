@@ -4,6 +4,7 @@ using EFCoreRelationshipsSample.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EFCoreRelationshipsSample.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260718230658_AddedBlogsAndPosts")]
+    partial class AddedBlogsAndPosts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,49 +98,6 @@ namespace EFCoreRelationshipsSample.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FoodItems");
-                });
-
-            modelBuilder.Entity("EFCoreRelationshipsSample.Models.Passport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateOnly>("IssueDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("PassportNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PersonId")
-                        .IsUnique();
-
-                    b.ToTable("Passports");
-                });
-
-            modelBuilder.Entity("EFCoreRelationshipsSample.Models.Person", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("People");
                 });
 
             modelBuilder.Entity("EFCoreRelationshipsSample.Models.Post", b =>
@@ -399,17 +359,6 @@ namespace EFCoreRelationshipsSample.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EFCoreRelationshipsSample.Models.Passport", b =>
-                {
-                    b.HasOne("EFCoreRelationshipsSample.Models.Person", "Person")
-                        .WithOne("Passport")
-                        .HasForeignKey("EFCoreRelationshipsSample.Models.Passport", "PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("EFCoreRelationshipsSample.Models.Post", b =>
                 {
                     b.HasOne("EFCoreRelationshipsSample.Models.Blog", "Blog")
@@ -475,11 +424,6 @@ namespace EFCoreRelationshipsSample.Data.Migrations
             modelBuilder.Entity("EFCoreRelationshipsSample.Models.Blog", b =>
                 {
                     b.Navigation("Posts");
-                });
-
-            modelBuilder.Entity("EFCoreRelationshipsSample.Models.Person", b =>
-                {
-                    b.Navigation("Passport");
                 });
 #pragma warning restore 612, 618
         }

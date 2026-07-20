@@ -16,4 +16,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Blog> Blogs { get; set; }
 
     public DbSet<Post> Posts { get; set; }
+
+    // One-to-one: a person has one passport.
+    public DbSet<Person> People { get; set; }
+
+    public DbSet<Passport> Passports { get; set; }
 }
